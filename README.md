@@ -1,16 +1,10 @@
-# fp
+# ISchedule
 
-A new Flutter project.
+Aplikasi menyusun jadwal dan tugas mahasiswa Sistem Informasi ITS.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Teknologi Berkembang B Kelompok 9
+	Viqi Alvianto 			5026221001
+	Rizky Fahreza Bakhtiar 			5026221075
+	Keysha Amelia 			5026221122
+	Gita Elizza Larasati			5026221124
+	Muhammad Hasan Kamal			5026221173
