@@ -206,12 +206,38 @@ class ScheduleStorage {
 
   ScheduleStorage._internal();
 
+  // Save schedule for a specific day
   void saveSchedule(String day, List<Map<String, dynamic>> schedule) {
     schedules[day] = schedule;
   }
 
+  // Retrieve schedule for a specific day
   List<Map<String, dynamic>> getSchedule(String day) {
     return schedules[day] ?? [];
+  }
+
+  // Get the count of subjects for a specific day (excluding 'Tambah Matkul')
+  int getSubjectCount(String day) {
+    final schedule = getSchedule(day);
+    return schedule.where((item) => item['subject'] != 'Tambah Matkul').length;
+  }
+
+  // Get the total task count for a specific day
+  int getTaskCountForDay(String day) {
+    final schedule = getSchedule(day);
+    int taskCount = 0;
+
+    for (var item in schedule) {
+      // Ensure that 'tasks' is a list before accessing its length
+      var tasks = item['tasks'];
+
+      // Check if 'tasks' is a valid list and then count its length
+      if (tasks is List) {
+        taskCount += tasks.length; // Count tasks for each subject
+      }
+    }
+
+    return taskCount;
   }
 }
 
@@ -305,7 +331,7 @@ class _LogoScreenState extends State<LogoScreen>
 }
 
 class WelcomePage extends StatelessWidget {
-  final String username; // Accept the username as a parameter
+  final String username;
 
   const WelcomePage({super.key, required this.username});
 
@@ -313,13 +339,14 @@ class WelcomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ScheduleStorage storage = ScheduleStorage();
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/bgsi.jpg'),
-            fit:
-                BoxFit.cover, // Adjust to BoxFit.cover or BoxFit.fill as needed
+            fit: BoxFit.cover,
           ),
         ),
         child: SafeArea(
@@ -343,14 +370,14 @@ class WelcomePage extends StatelessWidget {
                   child: Row(
                     children: [
                       Image.asset(
-                        'assets/images/logo.png', // Replace with your logo path
+                        'assets/images/logo.png',
                         width: 50,
                         height: 50,
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'Selamat Datang, $username', // Display the username dynamically
+                          'Selamat Datang, $username',
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -366,6 +393,10 @@ class WelcomePage extends StatelessWidget {
                     itemCount: days.length,
                     itemBuilder: (context, index) {
                       final day = days[index];
+                      final subjectCount = storage.getSubjectCount(day);
+                      final taskCount = storage.getTaskCountForDay(day)
+                          as int; // Explicit casting here
+
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: Material(
@@ -377,7 +408,10 @@ class WelcomePage extends StatelessWidget {
                                 MaterialPageRoute(
                                   builder: (context) => SchedulePage(day: day),
                                 ),
-                              );
+                              ).then((_) {
+                                // Trigger rebuild when returning from SchedulePage
+                                (context as Element).markNeedsBuild();
+                              });
                             },
                             borderRadius: BorderRadius.circular(10),
                             child: Ink(
@@ -386,7 +420,7 @@ class WelcomePage extends StatelessWidget {
                                   colors: [
                                     Color(0xff027DFD),
                                     Color.fromARGB(255, 212, 233, 255),
-                                  ], // Gradient colors
+                                  ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
@@ -412,7 +446,7 @@ class WelcomePage extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 4.0),
                                       Text(
-                                        'Details for $day',
+                                        '$subjectCount Mata Kuliah, $taskCount tugas',
                                         style: const TextStyle(
                                           fontSize: 14,
                                           color: Colors.white,
@@ -686,6 +720,7 @@ class _SchedulePageState extends State<SchedulePage> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
+                                  const SizedBox(height: 8),
                                   const SizedBox(height: 8),
                                   if (item['tasks'].isNotEmpty)
                                     Column(
