@@ -24,6 +24,180 @@ class LogoScreen extends StatefulWidget {
   _LogoScreenState createState() => _LogoScreenState();
 }
 
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  String? errorMessage;
+
+  void _login() {
+    final username = _usernameController.text;
+    final password = _passwordController.text;
+
+    if (username == 'admin' && password == '1234') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => WelcomePage(username: username),
+        ),
+      );
+    } else {
+      setState(() {
+        errorMessage = 'Invalid username or password';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Background image
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/bgsi.jpg', // Replace with your background image
+              fit: BoxFit.cover,
+            ),
+          ),
+          // Center content inside a container
+          Positioned.fill(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white
+                          .withOpacity(0.98), // Semi-transparent white
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Logo and App Name
+                        Column(
+                          children: [
+                            Image.asset(
+                              'assets/images/logo.png',
+                              width: 85,
+                              height: 85,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                Icons.error,
+                                size: 80,
+                                color: Colors.red,
+                              ),
+                            ),
+                            const SizedBox(height: 15),
+                            ShaderMask(
+                              shaderCallback: (bounds) => const LinearGradient(
+                                colors: [
+                                  Color(0xff027DFD),
+                                  Color.fromARGB(255, 0, 70, 146),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ).createShader(
+                                Rect.fromLTWH(
+                                    0, 0, bounds.width, bounds.height),
+                              ),
+                              child: const Text(
+                                "ISchedule",
+                                style: TextStyle(
+                                  fontFamily: 'montserrat',
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        // Error message
+                        if (errorMessage != null)
+                          Text(
+                            errorMessage!,
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        const SizedBox(height: 10),
+                        // Username field
+                        TextField(
+                          controller: _usernameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Username',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        // Password field
+                        TextField(
+                          controller: _passwordController,
+                          decoration: const InputDecoration(
+                            labelText: 'Password',
+                            border: OutlineInputBorder(),
+                          ),
+                          obscureText: true,
+                        ),
+                        const SizedBox(height: 20),
+                        // Login button
+                        GestureDetector(
+                          onTap: _login,
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 12.0),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color(0xff027DFD),
+                                  Color.fromARGB(255, 0, 70, 146),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Center(
+                              child: Text(
+                                'Login',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class ScheduleStorage {
   static final ScheduleStorage _instance = ScheduleStorage._internal();
   factory ScheduleStorage() => _instance;
@@ -60,12 +234,13 @@ class _LogoScreenState extends State<LogoScreen>
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
 
-    // Navigate to SchedulePage after 3 seconds
+    // Navigate to LoginPage after 3 seconds
     Future.delayed(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) => WelcomePage()), // Navigate to SchedulePage
+          builder: (context) => const LoginPage(),
+        ),
       );
     });
   }
@@ -130,7 +305,9 @@ class _LogoScreenState extends State<LogoScreen>
 }
 
 class WelcomePage extends StatelessWidget {
-  const WelcomePage({super.key});
+  final String username; // Accept the username as a parameter
+
+  const WelcomePage({super.key, required this.username});
 
   final List<String> days = const ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
 
@@ -171,10 +348,10 @@ class WelcomePage extends StatelessWidget {
                         height: 50,
                       ),
                       const SizedBox(width: 10),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Selamat Datang, Mahasiswa',
-                          style: TextStyle(
+                          'Selamat Datang, $username', // Display the username dynamically
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -192,8 +369,7 @@ class WelcomePage extends StatelessWidget {
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: Material(
-                          color: Colors
-                              .transparent, // Makes the Material widget transparent
+                          color: Colors.transparent,
                           child: InkWell(
                             onTap: () {
                               Navigator.push(
@@ -227,7 +403,7 @@ class WelcomePage extends StatelessWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        day, // Assuming day is a string, use day['day'] if it's a map
+                                        day,
                                         style: const TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
@@ -236,7 +412,7 @@ class WelcomePage extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 4.0),
                                       Text(
-                                        'Details for $day', // Replace with actual details if needed
+                                        'Details for $day',
                                         style: const TextStyle(
                                           fontSize: 14,
                                           color: Colors.white,
