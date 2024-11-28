@@ -419,7 +419,7 @@ class WelcomePage extends StatelessWidget {
                                 gradient: LinearGradient(
                                   colors: [
                                     Color(0xff027DFD),
-                                    Color.fromARGB(255, 212, 233, 255),
+                                    Color.fromARGB(255, 0, 70, 146),
                                   ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
@@ -652,8 +652,8 @@ class _SchedulePageState extends State<SchedulePage> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xff027DFD), // Primary color
-                Color.fromARGB(255, 212, 233, 255), // Secondary lighter shade
+                Color(0xff027DFD),
+                Color.fromARGB(255, 0, 70, 146), // Secondary lighter shade
               ],
             ),
           ),
@@ -684,7 +684,7 @@ class _SchedulePageState extends State<SchedulePage> {
                           end: Alignment.bottomRight,
                           colors: [
                             Color(0xff027DFD),
-                            Color.fromARGB(255, 212, 233, 255),
+                            Color.fromARGB(255, 0, 70, 146),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(12),
