@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 void main() {
   runApp(const ISchedule());
@@ -8,11 +10,25 @@ class ISchedule extends StatelessWidget {
   const ISchedule({super.key});
 
   @override
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'ISchedule',
       debugShowCheckedModeBanner: false,
-      home: const LogoScreen(), // Set LogoScreen as the initial screen
+      home: const LogoScreen(),
+      routes: {
+        '/welcome': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments
+              as Map<String, dynamic>;
+          return WelcomePage(username: args['username']);
+        },
+        '/todo': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments
+              as Map<String, dynamic>;
+          return ToDoListPage(username: args['username']);
+        },
+        '/login': (context) => const LoginPage(),
+      },
     );
   }
 }
@@ -57,16 +73,9 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 240, 242, 245),
       body: Stack(
         children: [
-          // Background image
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/bgsi.jpg', // Replace with your background image
-              fit: BoxFit.cover,
-            ),
-          ),
-          // Center content inside a container
           Positioned.fill(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -75,8 +84,8 @@ class _LoginPageState extends State<LoginPage> {
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white
-                          .withOpacity(0.98), // Semi-transparent white
+                      color: const Color.fromARGB(255, 255, 255, 255)
+                          .withOpacity(0.98),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
@@ -90,7 +99,6 @@ class _LoginPageState extends State<LoginPage> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Logo and App Name
                         Column(
                           children: [
                             Image.asset(
@@ -123,21 +131,19 @@ class _LoginPageState extends State<LoginPage> {
                                   fontFamily: 'montserrat',
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: Color.fromARGB(255, 193, 193, 193),
                                 ),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 20),
-                        // Error message
                         if (errorMessage != null)
                           Text(
                             errorMessage!,
                             style: const TextStyle(color: Colors.red),
                           ),
                         const SizedBox(height: 10),
-                        // Username field
                         TextField(
                           controller: _usernameController,
                           decoration: const InputDecoration(
@@ -146,7 +152,6 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        // Password field
                         TextField(
                           controller: _passwordController,
                           decoration: const InputDecoration(
@@ -156,7 +161,6 @@ class _LoginPageState extends State<LoginPage> {
                           obscureText: true,
                         ),
                         const SizedBox(height: 20),
-                        // Login button
                         GestureDetector(
                           onTap: _login,
                           child: Container(
@@ -206,34 +210,27 @@ class ScheduleStorage {
 
   ScheduleStorage._internal();
 
-  // Save schedule for a specific day
   void saveSchedule(String day, List<Map<String, dynamic>> schedule) {
     schedules[day] = schedule;
   }
 
-  // Retrieve schedule for a specific day
   List<Map<String, dynamic>> getSchedule(String day) {
     return schedules[day] ?? [];
   }
 
-  // Get the count of subjects for a specific day (excluding 'Tambah Matkul')
   int getSubjectCount(String day) {
     final schedule = getSchedule(day);
     return schedule.where((item) => item['subject'] != 'Tambah Matkul').length;
   }
 
-  // Get the total task count for a specific day
   int getTaskCountForDay(String day) {
     final schedule = getSchedule(day);
     int taskCount = 0;
 
     for (var item in schedule) {
-      // Ensure that 'tasks' is a list before accessing its length
       var tasks = item['tasks'];
-
-      // Check if 'tasks' is a valid list and then count its length
       if (tasks is List) {
-        taskCount += tasks.length; // Count tasks for each subject
+        taskCount += tasks.length;
       }
     }
 
@@ -249,8 +246,6 @@ class _LogoScreenState extends State<LogoScreen>
   @override
   void initState() {
     super.initState();
-
-    // Initialize AnimationController for scaling animation
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -259,8 +254,6 @@ class _LogoScreenState extends State<LogoScreen>
     _animation = Tween<double>(begin: 0.9, end: 1.1).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
-
-    // Navigate to LoginPage after 3 seconds
     Future.delayed(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
@@ -273,7 +266,7 @@ class _LogoScreenState extends State<LogoScreen>
 
   @override
   void dispose() {
-    _controller.dispose(); // Dispose AnimationController
+    _controller.dispose();
     super.dispose();
   }
 
@@ -281,34 +274,29 @@ class _LogoScreenState extends State<LogoScreen>
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFFE0F7FA), // Background color for splash screen
+        color: const Color.fromARGB(255, 240, 242, 245),
       ),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Animated logo with scaling effect
             ScaleTransition(
               scale: _animation,
               child: Image.asset(
-                'assets/images/logo.png', // Ensure the correct file path
+                'assets/images/logo.png',
                 width: 120,
                 height: 120,
                 errorBuilder: (context, error, stackTrace) => const Icon(
-                  Icons.error, // Show error icon if the image is missing
+                  Icons.error,
                   size: 80,
                   color: Colors.red,
                 ),
               ),
             ),
             const SizedBox(height: 20),
-            // App name displayed below the logo with gradient text
             ShaderMask(
               shaderCallback: (bounds) => const LinearGradient(
-                colors: [
-                  Color(0xff027DFD),
-                  Color.fromARGB(255, 0, 70, 146)
-                ], // Gradient colors
+                colors: [Color(0xff027DFD), Color.fromARGB(255, 0, 70, 146)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height)),
@@ -318,8 +306,7 @@ class _LogoScreenState extends State<LogoScreen>
                   fontFamily: 'montserrat',
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors
-                      .white, // This color is overridden by the ShaderMask
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -342,13 +329,43 @@ class WelcomePage extends StatelessWidget {
     final ScheduleStorage storage = ScheduleStorage();
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/bgsi.jpg'),
-            fit: BoxFit.cover,
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0, // Default to Home
+        selectedItemColor: Colors.indigoAccent,
+        unselectedItemColor: Colors.grey,
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.pushReplacementNamed(
+              context,
+              '/welcome',
+              arguments: {'username': username}, // Pass username here
+            );
+          } else if (index == 1) {
+            Navigator.pushReplacementNamed(
+              context,
+              '/todo',
+              arguments: {'username': username}, // Pass username here
+            );
+          } else if (index == 2) {
+            _showLogoutDialog(context);
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
           ),
-        ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.checklist),
+            label: 'To-Do List',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.logout),
+            label: 'Logout',
+          ),
+        ],
+      ),
+      body: Container(
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -357,16 +374,18 @@ class WelcomePage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.white, Colors.grey.shade200],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(25),
-                      bottomRight: Radius.circular(25),
-                    ),
-                  ),
+                      color: const Color.fromARGB(223, 255, 255, 255),
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(25),
+                        bottomRight: Radius.circular(25),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]),
                   child: Row(
                     children: [
                       Image.asset(
@@ -394,9 +413,7 @@ class WelcomePage extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final day = days[index];
                       final subjectCount = storage.getSubjectCount(day);
-                      final taskCount = storage.getTaskCountForDay(day)
-                          as int; // Explicit casting here
-
+                      final taskCount = storage.getTaskCountForDay(day) as int;
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: Material(
@@ -409,13 +426,13 @@ class WelcomePage extends StatelessWidget {
                                   builder: (context) => SchedulePage(day: day),
                                 ),
                               ).then((_) {
-                                // Trigger rebuild when returning from SchedulePage
                                 (context as Element).markNeedsBuild();
                               });
                             },
                             borderRadius: BorderRadius.circular(10),
                             child: Ink(
                               decoration: BoxDecoration(
+                                color: const Color(0xff25328C),
                                 gradient: LinearGradient(
                                   colors: [
                                     Color(0xff027DFD),
@@ -476,6 +493,30 @@ class WelcomePage extends StatelessWidget {
   }
 }
 
+void _showLogoutDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Konfirmasi Logout'),
+        content: const Text('Apakah anda ingin Log Out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+            child: const Text('Log Out'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 class SchedulePage extends StatefulWidget {
   final String day;
 
@@ -491,15 +532,12 @@ class _SchedulePageState extends State<SchedulePage> {
   @override
   void initState() {
     super.initState();
-
-    // Load the schedule for the specific day from storage
     final storedSchedule = ScheduleStorage().getSchedule(widget.day);
 
     setState(() {
       if (storedSchedule.isNotEmpty) {
         schedule.addAll(storedSchedule);
       } else {
-        // Initialize with default schedule if no stored schedule exists
         schedule.addAll([
           {
             'time': '7:30 - 10:00',
@@ -566,8 +604,7 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   void saveSchedule() {
-    ScheduleStorage()
-        .saveSchedule(widget.day, schedule); // Save the updated schedule
+    ScheduleStorage().saveSchedule(widget.day, schedule);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Jadwal Tersimpan!')),
     );
@@ -600,7 +637,7 @@ class _SchedulePageState extends State<SchedulePage> {
                   setState(() {
                     schedule[index]['subject'] = subjectController.text;
                   });
-                  saveSchedule(); // Save after editing the subject
+                  saveSchedule();
                 }
                 Navigator.of(context).pop();
               },
@@ -628,17 +665,18 @@ class _SchedulePageState extends State<SchedulePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 240, 242, 245),
       appBar: AppBar(
         title: Row(
           children: [
             Image.asset(
-              'assets/images/logo.png', // Replace with your logo path
+              'assets/images/logo.png',
               height: 24,
               width: 24,
             ),
             const SizedBox(width: 8),
             Text(
-              'ISchedule - ${widget.day}', // Dynamic title with the selected day
+              'ISchedule - ${widget.day}',
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -647,27 +685,21 @@ class _SchedulePageState extends State<SchedulePage> {
           ],
         ),
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xff027DFD),
-                Color.fromARGB(255, 0, 70, 146), // Secondary lighter shade
-              ],
-            ),
+          decoration: BoxDecoration(
+            color: Color.fromARGB(223, 255, 255, 255),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              )
+            ],
           ),
         ),
-        backgroundColor: Colors.transparent, // Makes the gradient visible
+        backgroundColor: Colors.transparent,
       ),
       body: Stack(
         children: [
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/bgsi.jpg', // Replace with your background image
-              fit: BoxFit.cover,
-            ),
-          ),
           Positioned.fill(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -679,9 +711,8 @@ class _SchedulePageState extends State<SchedulePage> {
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Container(
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                        color: Color(0xff25328C),
+                        gradient: LinearGradient(
                           colors: [
                             Color(0xff027DFD),
                             Color.fromARGB(255, 0, 70, 146),
@@ -774,6 +805,266 @@ class _SchedulePageState extends State<SchedulePage> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class ToDoListPage extends StatefulWidget {
+  final String username;
+
+  const ToDoListPage({Key? key, required this.username}) : super(key: key);
+
+  @override
+  State<ToDoListPage> createState() => _ToDoListPageState();
+}
+
+class _ToDoListPageState extends State<ToDoListPage> {
+  final List<ToDoItem> _toDoList = [];
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadToDoList();
+  }
+
+  Future<void> _loadToDoList() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? todoString = prefs.getString('todo_list');
+
+    if (todoString != null) {
+      final List<dynamic> jsonData = json.decode(todoString);
+      setState(() {
+        _toDoList.clear();
+        _toDoList.addAll(jsonData.map((item) => ToDoItem.fromMap(item)));
+      });
+    }
+  }
+
+  Future<void> _saveToDoList() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String jsonString =
+        json.encode(_toDoList.map((item) => item.toMap()).toList());
+    prefs.setString('todo_list', jsonString);
+  }
+
+  void _addToDo(String title) {
+    setState(() {
+      _toDoList.add(ToDoItem(title: title));
+      _saveToDoList();
+    });
+    _controller.clear();
+  }
+
+  void _toggleDone(int index) {
+    setState(() {
+      _toDoList[index].isDone = !_toDoList[index].isDone;
+      _saveToDoList();
+    });
+  }
+
+  void _deleteToDo(int index) {
+    setState(() {
+      _toDoList.removeAt(index);
+      _saveToDoList();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final toDoItems = _toDoList.where((item) => !item.isDone).toList();
+    final doneItems = _toDoList.where((item) => item.isDone).toList();
+
+    return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 240, 242, 245),
+      appBar: AppBar(
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/images/logo.png',
+              height: 24,
+              width: 24,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'To-Do List',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            color: Color.fromARGB(223, 255, 255, 255),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              )
+            ],
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: TextField(
+                controller: _controller,
+                decoration: InputDecoration(
+                  hintText: 'Tambahkan item baru...',
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.add_circle,
+                        color: Colors.indigoAccent),
+                    onPressed: () {
+                      if (_controller.text.isNotEmpty) {
+                        _addToDo(_controller.text);
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ),
+            _buildCard('To-Do', toDoItems),
+            _buildCard('Done', doneItems, isDone: true),
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 1, // Default to To-Do List
+        selectedItemColor: Colors.indigoAccent,
+        unselectedItemColor: Colors.grey,
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.pushReplacementNamed(
+              context,
+              '/welcome',
+              arguments: {
+                'username': widget.username
+              }, // Use widget.username here
+            );
+          } else if (index == 1) {
+            Navigator.pushReplacementNamed(
+              context,
+              '/todo',
+              arguments: {
+                'username': widget.username
+              }, // Use widget.username here
+            );
+          } else if (index == 2) {
+            _showLogoutDialog(context);
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.checklist),
+            label: 'To-Do List',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.logout),
+            label: 'Logout',
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Konfirmasi Logout'),
+          content: const Text('Apakah anda ingin Log Out?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/login');
+              },
+              child: const Text('Log Out'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildCard(String title, List<ToDoItem> items, {bool isDone = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        elevation: 3,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const Divider(),
+            ...items.map((item) => ListTile(
+                  leading: Checkbox(
+                    value: item.isDone,
+                    activeColor: Colors.indigoAccent,
+                    onChanged: (value) => _toggleDone(_toDoList.indexOf(item)),
+                  ),
+                  title: Text(
+                    item.title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      decoration:
+                          item.isDone ? TextDecoration.lineThrough : null,
+                    ),
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.redAccent),
+                    onPressed: () => _deleteToDo(_toDoList.indexOf(item)),
+                  ),
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ToDoItem {
+  String title;
+  bool isDone;
+
+  ToDoItem({required this.title, this.isDone = false});
+
+  Map<String, dynamic> toMap() {
+    return {'title': title, 'isDone': isDone};
+  }
+
+  factory ToDoItem.fromMap(Map<String, dynamic> map) {
+    return ToDoItem(
+      title: map['title'],
+      isDone: map['isDone'],
     );
   }
 }
