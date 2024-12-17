@@ -307,6 +307,7 @@ class _LogoScreenState extends State<LogoScreen>
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
+                  decoration: TextDecoration.none, // Remove underline
                 ),
               ),
             ),
